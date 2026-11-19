@@ -15,7 +15,7 @@ const unauthorized=await fetch(base+"/api/aster/credentials");assert.equal(unaut
 const health=await request("/health");assert.equal(health.status,200);assert.equal(health.data.ok,true);assert.ok(health.data.checks.every(x=>x.ok));
 const html=await request("/");assert.equal(html.status,200);assert.match(html.data,/api-form/);assert.match(html.data,/dashboard\.js/);
 const js=await request("/dashboard.js");assert.equal(js.status,200);assert.match(js.data,/loadApiCredentials/);
-let status=await request("/api/aster/credentials");assert.equal(status.data.configured,false);
+let status=await request("/api/aster/credentials");assert.equal(status.data.configured,false);const emptyAssets=await request("/api/assets");assert.equal(emptyAssets.data.connected,false);
 const {Wallet}=require("ethers");const fakeKey="0x"+"3".repeat(64);const fake={userAddress:"0x"+"1".repeat(40),agentAddress:new Wallet(fakeKey).address,agentPrivateKey:fakeKey};
 const invalid=await request("/api/aster/credentials",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({...fake,agentPrivateKey:"invalid"})});assert.equal(invalid.status,400);
 const mismatch=await request("/api/aster/credentials",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({...fake,agentAddress:"0x"+"2".repeat(40)})});assert.equal(mismatch.status,400);assert.match(mismatch.data.error,/correspond pas/);
@@ -23,7 +23,7 @@ const saved=await request("/api/aster/credentials",{method:"POST",headers:{"cont
 const disk=fs.readFileSync(path.join(dir,"aster-agent.enc"),"utf8");assert.ok(!disk.includes(fake.agentPrivateKey),"secret stored in plaintext");assert.ok(!disk.includes(fake.userAddress),"address stored in plaintext");
 status=await request("/api/aster/credentials");assert.equal(status.data.configured,true);assert.equal(status.data.agentPrivateKey,undefined);
 // Do not query real Aster accounts with test credentials in CI. Test local signer verification instead.
-const assets=await request("/api/assets");assert.equal(assets.data.connected,false);
+
 const live=await request("/api/grid/start",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({mode:"live",market:"spot",symbol:"BTCUSDT"})});assert.equal(live.status,403);
 const futures=await request("/api/grid/start",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({market:"futures",symbol:"BTCUSDT"})});assert.equal(futures.status,403);
 const reset=await request("/api/grid/reset",{method:"POST",headers:{"content-type":"application/json"},body:"{}"});assert.equal(reset.status,200);assert.equal(reset.data.running,false);
