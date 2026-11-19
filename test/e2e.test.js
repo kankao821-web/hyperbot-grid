@@ -18,6 +18,7 @@ const js=await request("/dashboard.js");assert.equal(js.status,200);assert.match
 let status=await request("/api/aster/credentials");assert.equal(status.data.configured,false);
 const {Wallet}=require("ethers");const fakeKey="0x"+"3".repeat(64);const fake={userAddress:"0x"+"1".repeat(40),agentAddress:new Wallet(fakeKey).address,agentPrivateKey:fakeKey};
 const invalid=await request("/api/aster/credentials",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({...fake,agentPrivateKey:"invalid"})});assert.equal(invalid.status,400);
+const mismatch=await request("/api/aster/credentials",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({...fake,agentAddress:"0x"+"2".repeat(40)})});assert.equal(mismatch.status,400);assert.match(mismatch.data.error,/correspond pas/);
 const saved=await request("/api/aster/credentials",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(fake)});assert.equal(saved.status,200);assert.equal(saved.data.configured,true);assert.equal(saved.data.agentPrivateKey,undefined);assert.equal(saved.data.privateKeyStored,true);
 const disk=fs.readFileSync(path.join(dir,"aster-agent.enc"),"utf8");assert.ok(!disk.includes(fake.agentPrivateKey),"secret stored in plaintext");assert.ok(!disk.includes(fake.userAddress),"address stored in plaintext");
 status=await request("/api/aster/credentials");assert.equal(status.data.configured,true);assert.equal(status.data.agentPrivateKey,undefined);
