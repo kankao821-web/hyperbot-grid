@@ -1,0 +1,20 @@
+name: HyperBot safety and integration tests
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify server and dashboard syntax
+        run: |
+          node --check server.js
+          node --check dashboard.js
+      - name: Run HTTP integration tests (fake credentials only, no real orders)
+        run: node --test test/*.test.js
