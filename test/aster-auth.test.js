@@ -11,5 +11,5 @@ const signature=await agent.signTypedData(DOMAIN,TYPES,{msg});
 assert.equal(verifyTypedData(DOMAIN,TYPES,{msg},signature),agent.address);
 assert.notEqual(verifyTypedData(DOMAIN,TYPES,{msg:msg+"&tampered=true"},signature),agent.address);
 assert.equal(DOMAIN.chainId,1666);
-assert.ok(BigInt(nextNonce())>BigInt(nextNonce())-2n);
+const nonce1=BigInt(nextNonce()),nonce2=BigInt(nextNonce());assert.ok(nonce2>nonce1);
 });
