@@ -5,7 +5,8 @@
   "type": "commonjs",
   "scripts": {
     "start": "node server.js",
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "prestart": "node --check server.js && node --check dashboard.js && node --test test/*.test.js"
   },
   "engines": {
     "node": ">=22"
