@@ -6,7 +6,7 @@ Interface web autonome en français pour tester un Spot GRID BTC avec 100 USDC f
 Ouvrir `index.html` dans Chrome, Edge ou Firefox. Aucun Python, installation ou connexion n'est requis.
 
 ## Mettre en ligne
-Déposer le dossier `hyperbot_grid_web` ou son fichier `index.html` sur un hébergement statique (Netlify Drop, GitHub Pages, etc.). La publication n'est pas effectuée automatiquement.
+Le dépôt contient un workflow GitHub Actions (`.github/workflows/deploy.yml`) qui publie automatiquement le site sur GitHub Pages à chaque modification de `main`, une fois Pages configuré avec **Source : GitHub Actions**. Adresse prévue : https://kankao821-web.github.io/hyperbot-grid/ . Vérifier l'exécution dans l'onglet Actions avant de considérer le site comme publié.
 
 ## Importer des cours
 CSV avec une colonne `Close` ou `Price`, éventuellement `Date`. Trier les lignes de la plus ancienne à la plus récente. Le moteur traite chaque ligne comme une observation et n'utilise que les clôtures. Les fichiers sont lus localement dans le navigateur et ne sont pas envoyés à un serveur.
