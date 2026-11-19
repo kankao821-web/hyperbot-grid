@@ -5,6 +5,10 @@ import argparse
 import os
 import time
 from decimal import Decimal, ROUND_DOWN
+from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).with_name('.env'))
 
 TESTNET_URL = "https://api.hyperliquid-testnet.xyz"
 
