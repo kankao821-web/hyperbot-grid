@@ -1,0 +1,2 @@
+hyperliquid-python-sdk>=0.18,<1
+eth-account>=0.13,<1
