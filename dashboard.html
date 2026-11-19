@@ -68,9 +68,10 @@ table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:10px 8px;
 <div class="row"><button type="submit" id="save-api">🔒 Enregistrer l'API</button><button type="button" class="secondary" id="test-api">Tester la configuration</button><button type="button" class="danger" id="delete-api">Supprimer</button></div>
 </form><div id="api-message" class="small muted" style="margin-top:12px;min-height:30px">La configuration est enregistrée sur Railway, pas dans le navigateur.</div>
 <div class="notice" style="margin-bottom:0"><strong>Trading réel désactivé.</strong> L'enregistrement de la clé ne déclenche aucun ordre. Le test vérifie le stockage sécurisé, pas encore les soldes privés Aster. Révoque toute clé précédemment exposée.</div></div>
-<div class="card"><h2>Mon compte Aster · Actifs réels</h2><span class="pill">NON CONNECTÉ</span><p class="muted small">Aucune clé privée/phrase secrète n'est présente dans le serveur. Ton adresse publique d'agent ne suffit pas pour lister les soldes Spot ni les positions Futures privés.</p>
-<div class="kpis"><div><div class="small muted">Solde Spot réel</div><div class="val">—</div></div><div><div class="small muted">Positions perpétuelles</div><div class="val">—</div></div><div><div class="small muted">Ordres réels</div><div class="val">—</div></div><div><div class="small muted">Marge réelle</div><div class="val">—</div></div></div>
-<p class="muted small">Une nouvelle clé API dédiée pourra être configurée ultérieurement comme variable secrète Railway, après révocation de l'ancienne clé exposée.</p></div>
+<div class="card"><h2>Mon compte Aster · Actifs réels</h2><span class="pill" id="assets-status">NON CONNECTÉ</span>
+<p class="muted small" id="assets-reason">Clique sur « Tester la configuration » dans Connexion Aster pour vérifier les soldes en lecture seule. Aucun ordre réel ne sera envoyé.</p>
+<div class="kpis"><div><div class="small muted">Actifs Spot</div><div class="val" id="spot-assets-count">—</div></div><div><div class="small muted">USDT Spot libre</div><div class="val" id="spot-usdt">—</div></div><div><div class="small muted">USDT Futures</div><div class="val" id="futures-usdt">—</div></div><div><div class="small muted">Trading réel</div><div class="val">OFF</div></div></div>
+<div class="small muted" id="assets-list">Aucun solde authentifié chargé.</div><button class="secondary" id="refresh-assets" type="button">↻ Actualiser mes soldes Aster</button></div>
 <div class="card"><h2>Diagnostic serveur</h2><div id="diag">Démarrage…</div><button class="secondary" id="test">Tester les API</button></div>
 </aside>
 </div>
