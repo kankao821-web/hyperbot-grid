@@ -26,6 +26,9 @@ status=await request("/api/aster/credentials");assert.equal(status.data.configur
 
 const live=await request("/api/grid/start",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({mode:"live",market:"spot",symbol:"BTCUSDT"})});assert.equal(live.status,403);
 const futures=await request("/api/grid/start",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({market:"futures",symbol:"BTCUSDT"})});assert.equal(futures.status,403);
+const riskPreview=await request("/api/trading/risk-preview",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({market:"spot",symbol:"BTCUSDT",side:"BUY",price:60000,quantity:0.0002,exchangePrice:60000,priceAgeMs:10,dailyPnlUsd:0,openOrders:0,spotExposureUsd:0,availableQuoteUsd:100})});assert.equal(riskPreview.status,200);assert.equal(riskPreview.data.allowed,false);assert.equal(riskPreview.data.executionEnabled,false);assert.equal(riskPreview.data.liveTradingEnabled,false);
+const crossSite=await request("/api/grid/reset",{method:"POST",headers:{"content-type":"application/json",origin:"https://attacker.invalid"},body:"{}"});assert.equal(crossSite.status,403);
+const crossFetch=await request("/api/grid/reset",{method:"POST",headers:{"content-type":"application/json","sec-fetch-site":"cross-site"},body:"{}"});assert.equal(crossFetch.status,403);
 const reset=await request("/api/grid/reset",{method:"POST",headers:{"content-type":"application/json"},body:"{}"});assert.equal(reset.status,200);assert.equal(reset.data.running,false);
 const deleted=await request("/api/aster/credentials",{method:"DELETE"});assert.equal(deleted.status,200);assert.equal(deleted.data.configured,false);assert.equal(fs.existsSync(path.join(dir,"aster-agent.enc")),false);
 });
