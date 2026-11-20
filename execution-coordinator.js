@@ -1,0 +1,16 @@
+"use strict";
+// Exchange-independent execution coordinator. Live network transport is deliberately absent.
+// Implements deterministic idempotency, reconciliation, state transitions, and kill switch.
+const crypto=require("node:crypto");
+const {assess}=require("./trade-risk");
+const STATES=Object.freeze(["PLANNED","SUBMITTED","PARTIALLY_FILLED","FILLED","CANCELED","REJECTED","UNKNOWN"]);
+class Coordinator{
+ constructor(adapter,{live=false}={}){if(!adapter||typeof adapter.submit!=="function"||typeof adapter.lookup!=="function"||typeof adapter.cancel!=="function")throw Error("Adapter incomplet");this.adapter=adapter;this.live=live;this.killSwitch=true;this.orders=new Map();this.inFlight=new Set()}
+ plan(request){const clientId="HB-"+crypto.randomUUID();const order={clientId,state:"PLANNED",request:{...request},filledQty:0,exchangeOrderId:null,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};this.orders.set(clientId,order);return {...order}}
+ async submit(clientId,context){const order=this.orders.get(clientId);if(!order)throw Error("Ordre inconnu");if(order.state!=="PLANNED")throw Error("Ordre déjà traité");if(this.inFlight.has(clientId))throw Error("Ordre en cours");const decision=assess({...order.request,...context,killSwitch:this.killSwitch});if(!decision.allowed)return {ok:false,errors:decision.errors,order:{...order}};if(!this.live)return {ok:false,errors:["Transport réel désactivé"],order:{...order}};this.inFlight.add(clientId);try{const response=await this.adapter.submit({...order.request,clientOrderId:clientId});order.exchangeOrderId=response.orderId||null;order.state=response.status==="FILLED"?"FILLED":"SUBMITTED";order.updatedAt=new Date().toISOString();return {ok:true,order:{...order}}}catch(e){order.state="UNKNOWN";order.updatedAt=new Date().toISOString();return {ok:false,errors:["Statut réseau incertain : réconciliation obligatoire, aucun renvoi automatique"],order:{...order}}}finally{this.inFlight.delete(clientId)}}
+ async reconcile(clientId){const order=this.orders.get(clientId);if(!order)throw Error("Ordre inconnu");if(order.state==="PLANNED")return {...order};const result=await this.adapter.lookup(clientId);if(!result){order.state="UNKNOWN";return {...order}}if(!STATES.includes(result.status))throw Error("Statut exchange invalide");order.state=result.status;order.exchangeOrderId=result.orderId||order.exchangeOrderId;order.filledQty=Number(result.filledQty||0);order.updatedAt=new Date().toISOString();return {...order}}
+ async cancel(clientId){const order=this.orders.get(clientId);if(!order)throw Error("Ordre inconnu");if(!["SUBMITTED","PARTIALLY_FILLED","UNKNOWN"].includes(order.state))throw Error("Ordre non annulable");const result=await this.adapter.cancel(clientId);if(result?.confirmed===true)order.state="CANCELED";else order.state="UNKNOWN";order.updatedAt=new Date().toISOString();return {...order}}
+ emergencyStop(){this.killSwitch=true;return {killSwitch:true,ordersToReconcile:[...this.orders.values()].filter(x=>["SUBMITTED","PARTIALLY_FILLED","UNKNOWN"].includes(x.state)).map(x=>x.clientId)}}
+ snapshot(){return {killSwitch:this.killSwitch,live:this.live,orders:[...this.orders.values()].map(x=>({...x}))}}
+}
+module.exports={Coordinator,STATES};
