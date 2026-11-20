@@ -35,16 +35,17 @@ table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:10px 8px;
 <div class="cards">
 <div class="card"><div class="muted small">Prix de la paire sélectionnée</div><div class="stat" id="price">—</div><div class="small muted" id="price-market">Spot Aster</div></div>
 <div class="card"><div class="muted small">Variation 24 h</div><div class="stat" id="change">—</div><div class="small muted">Marché sélectionné</div></div>
-<div class="card"><div class="muted small">Valeur GRID virtuelle</div><div class="stat" id="nav">—</div><div class="small muted">USDT + BTC valorisés</div></div>
+<div class="card"><div class="muted small">Valeur GRID virtuelle</div><div class="stat" id="nav">—</div><div class="small muted"><span id="nav-assets">Portefeuille virtuel valorisé</span></div></div>
 <div class="card"><div class="muted small">Résultat virtuel</div><div class="stat" id="pnl">—</div><div class="small muted">Frais simulés inclus</div></div>
 </div>
 <div class="two">
 <section>
-<div class="card"><div class="row between" style="margin-bottom:15px"><h2>Graphique de marché · TradingView Lightweight Charts</h2><div class="row"><div class="field"><label for="market">Marché</label><select id="market"><option value="spot">Spot BTC/USDT</option><option value="futures">Perpétuel BTC/USDT</option></select></div><div class="field"><label for="symbol">Paire</label><select id="symbol"><option value="BTCUSDT">BTC/USDT</option></select></div><div class="field"><label for="interval">Intervalle</label><select id="interval"><option value="1m">1 minute</option><option value="5m" selected>5 minutes</option><option value="15m">15 minutes</option><option value="1h">1 heure</option><option value="4h">4 heures</option><option value="1d">1 jour</option></select></div></div></div>
+<div class="card"><div class="row between" style="margin-bottom:15px"><h2>Graphique de marché · TradingView Lightweight Charts</h2><div class="row"><div class="field"><label for="market">Marché</label><select id="market"><option value="spot">Spot</option><option value="futures">Perpétuel</option></select></div><div class="field"><label for="symbol">Paire</label><select id="symbol"><option value="BTCUSDT">BTC/USDT</option></select></div><div class="field"><label for="interval">Intervalle</label><select id="interval"><option value="1m">1 minute</option><option value="5m" selected>5 minutes</option><option value="15m">15 minutes</option><option value="1h">1 heure</option><option value="4h">4 heures</option><option value="1d">1 jour</option></select></div></div></div>
+<div class="row between" style="margin-bottom:12px"><label class="small"><input type="checkbox" id="follow-grid" checked> Suivre la paire du robot</label><span class="small muted" id="grid-levels"></span></div>
 <div id="chart"><canvas id="fallback"></canvas></div><div id="chart-info">Chargement des bougies Aster…</div>
 <div class="row" style="margin-top:10px"><span class="pill">Chandeliers</span><span class="pill">Volumes</span><span class="pill">Moyenne mobile 20</span><span class="pill">Dates précises</span></div>
 </div>
-<div class="card"><div class="row between"><h2>Journal des transactions · GRID virtuelle</h2><span class="pill" id="trade-count">0 opération</span></div><div class="scroll"><table><thead><tr><th>Date et heure</th><th>Type</th><th>Prix (USDT)</th><th>Quantité BTC</th><th>Montant (USDT)</th><th>Frais</th></tr></thead><tbody id="trades"><tr><td colspan="6" class="muted">Aucune transaction virtuelle.</td></tr></tbody></table></div></div>
+<div class="card"><div class="row between"><h2>Journal des transactions · GRID virtuelle</h2><span class="pill" id="trade-count">0 opération</span></div><div class="scroll"><table><thead><tr><th>Date et heure</th><th>Type</th><th>Prix (USDT)</th><th><span id="trade-quantity">Quantité</span></th><th>Montant (USDT)</th><th>Frais</th></tr></thead><tbody id="trades"><tr><td colspan="6" class="muted">Aucune transaction virtuelle.</td></tr></tbody></table></div></div>
 </section>
 <aside>
 <div class="card"><div class="row between"><h2>Robot GRID · Spot</h2><span class="pill" id="bot-state">ARRÊTÉ</span></div>
@@ -58,7 +59,7 @@ table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:10px 8px;
 <div class="field"><label for="maxOrder">Ordre maximum (USDT)</label><input id="maxOrder" type="number" min="1" value="25"></div>
 <div class="field"><label for="feeBps">Frais supposés (bps)</label><input id="feeBps" type="number" min="0" max="100" step="1" value="10"></div>
 <div class="field"><label>Mode</label><input readonly value="Spot simulation — trading réel désactivé" style="opacity:.8"></div>
-</div><p class="muted small">Les paramètres peuvent être changés avant le lancement. La simulation démarre avec un petit achat BTC fictif, puis alterne achats et ventes à la hausse/baisse selon la grille. Frais hypothétiques, glissement non modélisé.</p>
+</div><p class="muted small">Les paramètres peuvent être changés avant le lancement. La simulation démarre avec un achat fictif de la paire choisie si le montant minimum est atteint, puis surveille les seuils d’achat et de vente autour du dernier ordre. Frais hypothétiques, glissement non modélisé.</p>
 <div class="row"><button id="start">▶ Démarrer 24 h/24</button><button class="secondary" id="stop">■ Stop</button><button class="danger" id="reset">↺ Réinitialiser</button></div><div id="grid-msg">Paramètre ton capital et clique sur Démarrer. Pour modifier une simulation déjà lancée, arrête-la puis réinitialise-la.</div>
 </div>
 <div class="card" id="aster-connection"><div class="row between"><h2>Paramètres · Connexion Aster</h2><span class="pill" id="api-status">Non configuré</span></div>
