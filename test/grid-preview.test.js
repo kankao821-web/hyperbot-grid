@@ -39,10 +39,12 @@ test("editing bounds and fees recalculates the grid and replay while the robot i
   });
   await new Promise(setImmediate);
   const startingRequests=requests.length;
-  nodes.lowerPrice.value="1.93";
+  nodes["fit-grid"].checked=true;
+  nodes.lowerPrice.value="1,93";
   nodes.lowerPrice.oninput();
-  assert.match(nodes["preview-result"].textContent,/Vérifie/);
-  nodes.upperPrice.value="2.09";
+  assert.match(nodes["preview-result"].textContent,/deux prix positifs/);
+  assert.equal(nodes["fit-grid"].checked,false);
+  nodes.upperPrice.value="2,09";
   nodes.upperPrice.oninput();
   assert.match(nodes["grid-levels"].textContent,/Prix bas.*Prix haut/);
   const previous=nodes["preview-result"].textContent;
@@ -63,4 +65,10 @@ test("editing bounds and fees recalculates the grid and replay while the robot i
   nodes["restore-grid"].onclick();
   assert.equal(nodes.lowerPrice.value,"");
   assert.match(nodes["grid-levels"].textContent,/Achat.*Vente/);
+  nodes.lowerPrice.value="1,93";
+  nodes.upperPrice.value="2,09";
+  nodes.gridSymbol.value="ETHUSDT";
+  nodes.gridSymbol.onchange();
+  assert.equal(nodes.lowerPrice.value,"");
+  assert.equal(nodes.upperPrice.value,"");
 });

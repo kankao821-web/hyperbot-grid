@@ -5,6 +5,7 @@ const e=id=>document.getElementById(id),fmt=(n,d=2)=>Number(n).toLocaleString("f
 let chart=null,series=null,sma=null,volumeSeries=null,currentCandles=[],marketPending=null,chartPending=null,lastGrid=null;
 let renderedChartKey=null, priceLines=[];
 let draftDirty=false, previewLines=[], previewKey=null, pendingAutoFill=null;
+const priceKeys=["lowerPrice","upperPrice"];
 const configKeys=["capital","levels","rangePct","allocationPct","minOrder","maxOrder","feeBps","lowerPrice","upperPrice"];
 const pairLabel = symbol => symbol.replace(/USDT$/, "/USDT");
 const pricePrecision = price => Math.min(10, Math.max(2, 4 - Math.floor(Math.log10(Math.abs(price) || 1))));
@@ -21,9 +22,10 @@ function selectPair(select, symbol) {
 
 function draftConfig() {
   return Object.fromEntries(configKeys.map(key => {
-    const value=e(key).value;
-    const optional=key==="lowerPrice"||key==="upperPrice";
-    return [key, value==="" ? optional ? null : NaN : Number(value)];
+    const value=String(e(key).value).trim();
+    if (!priceKeys.includes(key)) return [key,value===""?NaN:Number(value)];
+    const decimal=/^(?:\d+(?:[.,]\d*)?|[.,]\d+)$/;
+    return [key,value===""?null:decimal.test(value)?Number(value.replace(",",".")):NaN];
   }));
 }
 
@@ -79,7 +81,16 @@ function renderPreview() {
   } else {
     const amount=engine.budget({config});
     let message="Vérifie le capital et les options avancées.";
-    if (!geometryValid) message="Vérifie les prix et le nombre de grilles (2 à 30)."+(previewLines.length?" Dernier tracé conservé.":"");
+    if (!geometryValid) {
+      if (hasBounds && !(config.lowerPrice>0 && config.upperPrice>config.lowerPrice)) {
+        message="Saisis deux prix positifs, avec un prix haut supérieur au prix bas.";
+      } else if (!Number.isInteger(config.levels)||config.levels<2||config.levels>30) {
+        message="Saisis un nombre entier de grilles entre 2 et 30.";
+      } else {
+        message="Vérifie l’amplitude dans les options avancées.";
+      }
+      if (previewLines.length) message+=" Dernier tracé conservé.";
+    }
     else if (valid) message="Affiche la paire Spot du robot pour obtenir la simulation.";
     else if (amount<config.minOrder) {
       const required=Math.ceil(config.minOrder*config.levels*100/config.allocationPct);
@@ -88,7 +99,8 @@ function renderPreview() {
     e("preview-result").textContent=message;
   }
   const period=candles.length ? candles.length+" clôtures de "+e("interval").value+" · " : "";
-  e("preview-note").textContent=period+"Simulation historique aux clôtures, frais inclus. "+(lastGrid?.reference&&draftDirty?"Aperçu des nouveaux réglages. Réinitialise puis démarre pour les appliquer.":"");
+  const outside=anchor&&geometryValid&&hasBounds&&(anchor<config.lowerPrice||anchor>config.upperPrice);
+  e("preview-note").textContent=(outside?"Dernière clôture hors de la fourchette. ":"")+period+"Simulation historique aux clôtures, frais inclus. "+(lastGrid?.reference&&draftDirty?"Aperçu des nouveaux réglages. Réinitialise puis démarre pour les appliquer.":"");
 }
 
 function editDraft() {
@@ -204,8 +216,20 @@ e("start").onclick=()=>command("start");e("stop").onclick=()=>command("stop");e(
 e("market").onchange=()=>{pendingAutoFill=null;e("follow-grid").checked=false;refreshSelection();drawGridLines();void loadSymbols()};
 e("symbol").onchange=()=>{pendingAutoFill=null;e("follow-grid").checked=false;refreshSelection();drawGridLines()};
 e("interval").onchange=()=>{pendingAutoFill=null;refreshSelection()};
-e("gridSymbol").onchange=()=>{pendingAutoFill=null;e("follow-grid").checked=true;editDraft()};
-for (const key of configKeys) e(key).oninput=editDraft;
+e("gridSymbol").onchange=()=>{
+  pendingAutoFill=null;
+  for(const key of priceKeys)e(key).value="";
+  e("fit-grid").checked=false;
+  e("follow-grid").checked=true;
+  editDraft();
+};
+for (const key of configKeys) e(key).oninput=()=>{
+  if(priceKeys.includes(key)&&e("fit-grid").checked){
+    e("fit-grid").checked=false;
+    if(chart)series.applyOptions({autoscaleInfoProvider:chartScale});
+  }
+  editDraft();
+};
 e("restore-grid").onclick=()=>{draftDirty=false;loadGridConfig(lastGrid);syncChartToGrid()};
 function fillRecentRange() {
   const recent=currentCandles.slice(-31,-1);

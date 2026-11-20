@@ -55,8 +55,8 @@ table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:10px 8px;
 <div class="field"><label for="gridSymbol">Paire du robot GRID</label><select id="gridSymbol"><option value="BTCUSDT">BTC/USDT</option></select></div>
 <div class="row between"><span class="small muted">Fourchette de prix</span><button class="secondary" id="fill-range" type="button" disabled>Remplir auto</button></div>
 <div class="fields">
-<div class="field"><label for="lowerPrice">Prix bas (USDT)</label><input id="lowerPrice" type="number" min="0" step="any" placeholder="Facultatif"></div>
-<div class="field"><label for="upperPrice">Prix haut (USDT)</label><input id="upperPrice" type="number" min="0" step="any" placeholder="Facultatif"></div>
+<div class="field"><label for="lowerPrice">Prix bas (USDT)</label><input id="lowerPrice" type="text" inputmode="decimal" autocomplete="off" placeholder="Facultatif"></div>
+<div class="field"><label for="upperPrice">Prix haut (USDT)</label><input id="upperPrice" type="text" inputmode="decimal" autocomplete="off" placeholder="Facultatif"></div>
 </div>
 <div class="field"><label for="levels">Nombre de grilles (2 à 30)</label><input id="levels" type="number" min="2" max="30" value="4"></div>
 <div class="field"><label for="capital">Capital simulé (USDT)</label><input id="capital" type="number" min="20" max="10000" step="1" value="100"></div>
