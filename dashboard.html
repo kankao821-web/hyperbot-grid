@@ -52,14 +52,24 @@ table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:10px 8px;
 <div class="kpis" style="margin-bottom:16px"><div><div class="small muted">USDT virtuels</div><div class="val" id="usdt">—</div></div><div><div class="small muted" id="base-asset-label">BTC virtuel</div><div class="val" id="btc">—</div></div><div><div class="small muted">Référence GRID</div><div class="val" id="reference">—</div></div><div><div class="small muted">Écart par niveau</div><div class="val" id="step">—</div></div></div>
 <div class="fields"><div class="field"><label for="gridSymbol">Paire du robot GRID</label><select id="gridSymbol"><option value="BTCUSDT">BTC/USDT</option></select></div>
 <div class="field"><label for="capital">Capital simulé (USDT)</label><input id="capital" type="number" min="20" max="10000" step="1" value="100"></div>
+<div class="field"><label for="lowerPrice">Prix bas (USDT)</label><input id="lowerPrice" type="number" min="0" step="any" placeholder="Facultatif"></div>
+<div class="field"><label for="upperPrice">Prix haut (USDT)</label><input id="upperPrice" type="number" min="0" step="any" placeholder="Facultatif"></div>
 <div class="field"><label for="levels">Niveaux GRID</label><input id="levels" type="number" min="2" max="30" value="4"></div>
-<div class="field"><label for="rangePct">Amplitude totale (%)</label><input id="rangePct" type="number" min=".2" max="30" step=".1" value="6"></div>
+<div class="field"><label for="rangePct">Amplitude sans bornes (%)</label><input id="rangePct" type="number" min=".2" max="30" step=".1" value="6"></div>
 <div class="field"><label for="allocationPct">Capital alloué (%)</label><input id="allocationPct" type="number" min="1" max="80" value="60"></div>
 <div class="field"><label for="minOrder">Ordre minimum (USDT)</label><input id="minOrder" type="number" min="1" value="10"></div>
 <div class="field"><label for="maxOrder">Ordre maximum (USDT)</label><input id="maxOrder" type="number" min="1" value="25"></div>
 <div class="field"><label for="feeBps">Frais supposés (bps)</label><input id="feeBps" type="number" min="0" max="100" step="1" value="10"></div>
 <div class="field"><label>Mode</label><input readonly value="Spot simulation — trading réel désactivé" style="opacity:.8"></div>
 </div><p class="muted small">Les paramètres peuvent être changés avant le lancement. La simulation démarre avec un achat fictif de la paire choisie si le montant minimum est atteint, puis surveille les seuils d’achat et de vente autour du dernier ordre. Frais hypothétiques, glissement non modélisé.</p>
+<button class="secondary" id="fill-range" type="button" disabled>Remplir avec les prix récents</button>
+<div class="notice" aria-live="polite">
+  <strong id="preview-title">Aperçu des réglages</strong>
+  <div class="small" id="preview-budget"></div>
+  <div class="small" id="preview-result"></div>
+  <div class="small muted" id="preview-note">Résultat historique simulé, frais inclus.</div>
+</div>
+<button class="secondary" id="restore-grid" type="button" hidden>Revenir aux réglages du robot</button>
 <div class="row"><button id="start">▶ Démarrer 24 h/24</button><button class="secondary" id="stop">■ Stop</button><button class="danger" id="reset">↺ Réinitialiser</button></div><div id="grid-msg">Paramètre ton capital et clique sur Démarrer. Pour modifier une simulation déjà lancée, arrête-la puis réinitialise-la.</div>
 </div>
 <div class="card" id="aster-connection"><div class="row between"><h2>Paramètres · Connexion Aster</h2><span class="pill" id="api-status">Non configuré</span></div>
@@ -84,5 +94,6 @@ table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:10px 8px;
 </main>
 
 <script src="/connection.js" defer></script>
+<script src="/paper-grid.js" defer></script>
 <script src="/dashboard.js" defer></script>
 <script async src="https://unpkg.com/lightweight-charts@5.0.9/dist/lightweight-charts.standalone.production.js"></script></body></html>
