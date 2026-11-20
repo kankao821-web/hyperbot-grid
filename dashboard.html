@@ -61,7 +61,7 @@ table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:10px 8px;
 </div>
 <div class="card" id="aster-connection"><div class="row between"><h2>Paramètres · Connexion Aster</h2><span class="pill" id="api-status">Non configuré</span></div>
 <p class="muted small">Enregistre tes adresses et ta nouvelle API Wallet directement ici. Les identifiants sont envoyés au serveur Railway via HTTPS puis conservés chiffrés sur son volume privé. La clé n'est jamais réaffichée.</p>
-<form id="api-form" autocomplete="off">
+<form id="api-form" autocomplete="off" novalidate>
 <div class="field" style="margin-bottom:12px"><label for="userAddress">Adresse publique du portefeuille principal</label><input id="userAddress" spellcheck="false" placeholder="0x… adresse du portefeuille principal" required pattern="0x[a-fA-F0-9]{40}" autocomplete="off"></div>
 <div class="field" style="margin-bottom:12px"><label for="agentAddress">Adresse publique de l'API Wallet / Agent</label><input id="agentAddress" spellcheck="false" placeholder="0x… adresse de l'Agent autorisé" required pattern="0x[a-fA-F0-9]{40}" autocomplete="off"></div>
 <div class="field" style="margin-bottom:12px"><label for="agentPrivateKey">Clé privée de la nouvelle API Wallet uniquement</label><div class="row" style="flex-wrap:nowrap"><input id="agentPrivateKey" type="password" spellcheck="false" placeholder="Clé privée Agent (jamais celle du portefeuille principal)" required minlength="64" maxlength="66" autocomplete="new-password"><button type="button" class="secondary" id="toggle-api-key" aria-label="Afficher ou masquer la clé">👁</button></div></div>
