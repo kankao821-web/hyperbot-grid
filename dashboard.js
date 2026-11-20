@@ -4,7 +4,7 @@
 const e=id=>document.getElementById(id),fmt=(n,d=2)=>Number(n).toLocaleString("fr-FR",{minimumFractionDigits:d,maximumFractionDigits:d}),currency=n=>fmt(n)+" USDT";
 let chart=null,series=null,sma=null,volumeSeries=null,currentCandles=[],marketPending=null,chartPending=null,lastGrid=null;
 let renderedChartKey=null, priceLines=[];
-let draftDirty=false, previewLines=[];
+let draftDirty=false, previewLines=[], previewKey=null;
 const configKeys=["capital","levels","rangePct","allocationPct","minOrder","maxOrder","feeBps","lowerPrice","upperPrice"];
 const pairLabel = symbol => symbol.replace(/USDT$/, "/USDT");
 const pricePrecision = price => Math.min(10, Math.max(2, 4 - Math.floor(Math.log10(Math.abs(price) || 1))));
@@ -45,9 +45,11 @@ function renderPreview() {
   e("restore-grid").hidden=!draftDirty||!lastGrid?.reference;
   e("preview-title").textContent="Aperçu · "+pairLabel(symbol);
   e("preview-budget").textContent=valid ? "Capital "+currency(config.capital)+" · "+currency(engine.budget({config}))+" par ordre" : "";
-  previewLines=[];
-  if (valid && candles.length) {
-    const anchor=candles.at(-1).close;
+  if (!matches || previewKey!==renderedChartKey) previewLines=[];
+  const geometryValid=engine.validGeometry(config);
+  const anchor=candles.at(-1)?.close;
+  if (geometryValid && anchor) {
+    previewKey=renderedChartKey;
     if (config.lowerPrice!=null) {
       const distance=(config.upperPrice-config.lowerPrice)/config.levels;
       previewLines=Array.from({length:config.levels+1},(_,index)=>({
@@ -63,6 +65,8 @@ function renderPreview() {
         {price:sell,title:"Vente simulée",color:"#f47787"},
       ];
     }
+  }
+  if (valid && anchor) {
     const buy=config.lowerPrice==null ? engine.triggers({config,reference:anchor}).buy : config.lowerPrice;
     const next=config.lowerPrice==null ? anchor : buy+(config.upperPrice-buy)/config.levels;
     const feeRate=config.feeBps/10000;
@@ -72,7 +76,12 @@ function renderPreview() {
     const sign=result.pnl>0?"+":"";
     e("preview-result").textContent=sign+currency(result.pnl)+" ("+sign+fmt(100*result.pnl/config.capital)+" %) · "+result.orders+" ordres · Frais "+currency(result.fees);
   } else {
-    e("preview-result").textContent=valid ? "Affiche la paire Spot du robot pour charger les bougies de l’aperçu." : "Vérifie les bornes, le capital et le montant minimum par ordre.";
+    const amount=engine.budget({config});
+    let message="Vérifie le capital et les options avancées.";
+    if (!geometryValid) message="Vérifie les prix et le nombre de grilles (2 à 30)."+(previewLines.length?" Dernier tracé conservé.":"");
+    else if (valid) message="Affiche la paire Spot du robot pour obtenir la simulation.";
+    else if (amount<config.minOrder) message=currency(amount)+" par ordre, minimum "+currency(config.minOrder)+". Augmente le capital ou réduis le nombre de grilles.";
+    e("preview-result").textContent=message;
   }
   const period=candles.length ? candles.length+" clôtures de "+e("interval").value+" · " : "";
   e("preview-note").textContent=period+"Simulation historique aux clôtures, frais inclus. "+(lastGrid?.reference&&draftDirty?"Aperçu des nouveaux réglages. Réinitialise puis démarre pour les appliquer.":"");
@@ -80,7 +89,6 @@ function renderPreview() {
 
 function editDraft() {
   draftDirty=true;
-  e("follow-grid").checked=true;
   syncChartToGrid();
 }
 
@@ -174,7 +182,7 @@ e("start").onclick=()=>command("start");e("stop").onclick=()=>command("stop");e(
 e("market").onchange=()=>{e("follow-grid").checked=false;refreshSelection();drawGridLines();void loadSymbols()};
 e("symbol").onchange=()=>{e("follow-grid").checked=false;refreshSelection();drawGridLines()};
 e("interval").onchange=refreshSelection;
-e("gridSymbol").onchange=editDraft;
+e("gridSymbol").onchange=()=>{e("follow-grid").checked=true;editDraft()};
 for (const key of configKeys) e(key).oninput=editDraft;
 e("restore-grid").onclick=()=>{draftDirty=false;loadGridConfig(lastGrid);syncChartToGrid()};
 e("fill-range").onclick=()=>{

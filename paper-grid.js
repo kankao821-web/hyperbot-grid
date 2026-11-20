@@ -6,7 +6,11 @@ function validBounds(c) {
   return c.lowerPrice == null && c.upperPrice == null ||
     finite(c.lowerPrice) && finite(c.upperPrice) && c.lowerPrice > 0 && c.upperPrice > c.lowerPrice;
 }
-function valid(c){return c&&validBounds(c)&&[c.capital,c.levels,c.rangePct,c.allocationPct,c.minOrder,c.maxOrder,c.feeBps].every(finite)&&c.capital>=20&&c.capital<=10000&&Number.isInteger(c.levels)&&c.levels>=2&&c.levels<=30&&c.rangePct>=0.2&&c.rangePct<=30&&c.allocationPct>=1&&c.allocationPct<=80&&c.minOrder>=1&&c.maxOrder>=c.minOrder&&c.maxOrder<=1000&&c.feeBps>=0&&c.feeBps<=100&&c.capital*c.allocationPct/100/c.levels>=c.minOrder}
+function validGeometry(c) {
+  return !!c && validBounds(c) && Number.isInteger(c.levels) && c.levels>=2 && c.levels<=30 &&
+    finite(c.rangePct) && c.rangePct>=0.2 && c.rangePct<=30;
+}
+function valid(c){return validGeometry(c)&&[c.capital,c.allocationPct,c.minOrder,c.maxOrder,c.feeBps].every(finite)&&c.capital>=20&&c.capital<=10000&&c.allocationPct>=1&&c.allocationPct<=80&&c.minOrder>=1&&c.maxOrder>=c.minOrder&&c.maxOrder<=1000&&c.feeBps>=0&&c.feeBps<=100&&c.capital*c.allocationPct/100/c.levels>=c.minOrder}
 function budget(s){const c=s.config;return Math.min(c.maxOrder,c.capital*c.allocationPct/100/c.levels)}
 function fill(s,side,price,notional,seed=false){if(!finite(price)||price<=0||!finite(notional)||notional<=0)return false;const fee=notional*s.config.feeBps/10000,quantity=notional/price;if(side==="BUY"){if(notional+fee>s.usdt+1e-8)return false;s.usdt-=notional+fee;s.btc+=quantity}else if(side==="SELL"){if(quantity>s.btc+1e-10)return false;s.btc-=quantity;s.usdt+=notional-fee}else return false;s.reference=price;s.lastFillAt=new Date().toISOString();s.trades.push({at:s.lastFillAt,side,price,qty:quantity,notional,fee,seed,market:"spot",symbol:s.symbol,simulation:true});s.trades=s.trades.slice(-500);return true}
 function triggers(s) {
@@ -42,7 +46,7 @@ function replay(symbol, config, candles) {
     fees: state.trades.reduce((sum, trade) => sum + trade.fee, 0),
   };
 }
-const engine = {valid,budget,fill,step,initialize,nav,triggers,replay};
+const engine = {valid,validGeometry,budget,fill,step,initialize,nav,triggers,replay};
 if (typeof module === "object" && module.exports) module.exports = engine;
 else window.PaperGrid = engine;
 })();

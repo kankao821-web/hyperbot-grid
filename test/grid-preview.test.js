@@ -49,6 +49,15 @@ test("editing bounds and fees recalculates the grid and replay while the robot i
   nodes.feeBps.value="100";
   nodes.feeBps.oninput();
   assert.notEqual(nodes["preview-result"].textContent,previous);
+  nodes.levels.value="20";
+  nodes.levels.oninput();
+  assert.match(nodes["preview-result"].textContent,/minimum/);
+  assert.match(nodes["grid-levels"].textContent,/Prix bas.*Prix haut/);
+  assert.equal(nodes.fallback.style.display,"block");
+  nodes.levels.value="";
+  nodes.levels.oninput();
+  assert.match(nodes["preview-result"].textContent,/Dernier tracé conservé/);
+  assert.equal(nodes.fallback.style.display,"block");
   assert.equal(requests.length,startingRequests);
   assert.equal(state.config.lowerPrice,undefined);
   nodes["restore-grid"].onclick();
