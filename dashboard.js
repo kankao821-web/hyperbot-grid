@@ -169,6 +169,17 @@ function syncChartToGrid() {
   drawGridLines();
 }
 
+const priorityPairs = ["BTCUSDT", "ASTERUSDT", "HYPEUSDT", "ETHUSDT", "LTCUSDT"];
+
+function marketOptions(pairs) {
+  const rank = symbol => {
+    const index = priorityPairs.indexOf(symbol);
+    return index === -1 ? priorityPairs.length : index;
+  };
+  return [...pairs].sort((a, b) => rank(a.symbol) - rank(b.symbol))
+    .map(pair => new Option(pairLabel(pair.symbol), pair.symbol));
+}
+
 async function loadSymbols() {
   const market = e("market").value;
   try {
@@ -180,13 +191,13 @@ async function loadSymbols() {
     }
     const select = e("symbol");
     const selected = select.value;
-    select.replaceChildren(...d.all.map(pair => new Option(pairLabel(pair.symbol), pair.symbol)));
+    select.replaceChildren(...marketOptions(d.all));
     const followed = e("follow-grid").checked && market === "spot";
     selectPair(select, followed || d.all.some(pair => pair.symbol === selected) ? selected : select.options[0].value);
     if (market === "spot") {
       const grid = e("gridSymbol");
       const configured = lastGrid?.reference && !draftDirty ? lastGrid.symbol : grid.value;
-      grid.replaceChildren(...d.all.map(pair => new Option(pairLabel(pair.symbol), pair.symbol)));
+      grid.replaceChildren(...marketOptions(d.all));
       selectPair(grid, configured || "BTCUSDT");
     }
     syncChartToGrid();
