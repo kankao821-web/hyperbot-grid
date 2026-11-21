@@ -13,3 +13,24 @@ test("stress: 2500 volatile ticks never produce negative inventory, NaN or live 
 test("circuit breaker stops a 16 percent gap without trading",()=>{const s=g.initialize("BTCUSDT",c,60000),before=s.trades.length;assert.equal(g.step(s,50000),null);assert.equal(s.running,false);assert.equal(s.trades.length,before);assert.match(s.marketError,/15 %/)});
 test("circuit breaker stops drawdown greater than 10 percent",()=>{const s=g.initialize("BTCUSDT",c,60000);s.usdt=50;s.btc=0;assert.equal(g.step(s,60000),null);assert.equal(s.running,false);assert.match(s.marketError,/10 %/)});
 test("circuit breaker stops corrupted inventory",()=>{const s=g.initialize("BTCUSDT",c,60000);s.btc=-1;assert.equal(g.step(s,60000),null);assert.equal(s.running,false);assert.match(s.marketError,/inventaire/)});
+
+test("reinvestment uses cumulative realized profit after both fees and respects threshold and cap", () => {
+  const config = {...c, reinvestPct: 50, reinvestMin: 1, maxOrder: 16};
+  const state = g.initialize("BTCUSDT", config, 100);
+  assert.equal(g.budget(state), 15);
+  assert.equal(g.fill(state, "SELL", 110, 17.6), true);
+  const net = 17.6 * 0.999 - 16 * 1.001;
+  assert.ok(Math.abs(state.realizedNet - net) < 1e-9);
+  assert.ok(Math.abs(g.budget(state) - (15 + net / 8)) < 1e-9);
+  state.config = {...config, reinvestMin: 4};
+  assert.equal(g.budget(state), 15);
+  state.config = config;
+  assert.equal(g.fill(state, "BUY", 100, 15), true);
+  assert.equal(g.fill(state, "SELL", 150, 22.5), true);
+  assert.equal(g.budget(state), 16);
+  assert.equal(g.fill(state, "BUY", 100, 20), true);
+  assert.equal(g.fill(state, "SELL", 20, 4), true);
+  assert.equal(g.budget(state), 15);
+  assert.equal(g.valid({...config, reinvestPct: 101}), false);
+  assert.equal(g.valid({...config, reinvestMin: -1}), false);
+});

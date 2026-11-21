@@ -5,7 +5,7 @@ const e=id=>document.getElementById(id),fmt=(n,d=2)=>Number(n).toLocaleString("f
 let chart=null,series=null,sma=null,volumeSeries=null,currentCandles=[],marketPending=null,chartPending=null,lastGrid=null;
 let renderedChartKey=null, priceLines=[];
 let draftDirty=false, previewLines=[], previewKey=null, pendingAutoFill=null;
-const priceKeys=["lowerPrice","upperPrice"];
+const priceKeys=["lowerPrice","upperPrice","reinvestPct","reinvestMin"];
 const configKeys=["capital","levels","rangePct","allocationPct","minOrder","maxOrder","feeBps","lowerPrice","upperPrice"];
 const pairLabel = symbol => symbol.replace(/USDT$/, "/USDT");
 const pricePrecision = price => Math.min(10, Math.max(2, 4 - Math.floor(Math.log10(Math.abs(price) || 1))));
@@ -23,6 +23,7 @@ function selectPair(select, symbol) {
 function draftConfig() {
   return Object.fromEntries(configKeys.map(key => {
     const value=String(e(key).value).trim();
+    if ((key==="reinvestPct" || key==="reinvestMin") && value==="") return [key,0];
     if (!priceKeys.includes(key)) return [key,value===""?NaN:Number(value)];
     const decimal=/^(?:\d+(?:[.,]\d*)?|[.,]\d+)$/;
     return [key,value===""?null:decimal.test(value)?Number(value.replace(",",".")):NaN];
@@ -30,7 +31,7 @@ function draftConfig() {
 }
 
 function loadGridConfig(state) {
-  for (const key of configKeys) e(key).value=state.config[key]??"";
+  for (const key of configKeys) e(key).value=state.config[key]??e(key).defaultValue??"";
   selectPair(e("gridSymbol"),state.symbol);
 }
 
@@ -78,6 +79,13 @@ function renderPreview() {
     const result=engine.replay(symbol,config,candles);
     const sign=result.pnl>0?"+":"";
     e("preview-result").textContent=sign+currency(result.pnl)+" ("+sign+fmt(100*result.pnl/config.capital)+" %) · "+result.orders+" ordres · Frais "+currency(result.fees);
+    if (config.reinvestPct > 0) {
+      const baseline = engine.replay(symbol, {...config,reinvestPct:0}, candles);
+      e("preview-result").textContent += " · Sans réinvestissement "+currency(baseline.pnl)+
+        " · Gains nets réalisés "+currency(result.realizedNet)+
+        " · Gains intégrés au calcul "+currency(result.reinvested)+
+        " · Budget cible par ordre "+currency(result.orderBudget);
+    }
   } else {
     const amount=engine.budget({config});
     let message="Vérifie le capital et les options avancées.";
