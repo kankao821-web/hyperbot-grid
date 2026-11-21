@@ -1,15 +1,9 @@
 {
-  "name": "hyperbot-aster-cloud",
-  "version": "1.0.0",
+  "name": "grid-lab-aster-diagnostics",
   "private": true,
-  "type": "commonjs",
   "scripts": {
-    "start": "node server.js",
-    "test": "node --test test/*.test.js",
-    "prestart": "node --check server.js && node --check dashboard.js && node --test test/*.test.js"
-  },
-  "engines": {
-    "node": ">=22"
+    "check": "node check-futures.cjs",
+    "start": "node railway-check.cjs"
   },
   "dependencies": {
     "ethers": "6.15.0"
